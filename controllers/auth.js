@@ -1,8 +1,10 @@
 const AWS = require('aws-sdk')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
-const {registerEmailParams} = require('../helpers/email')
+const {registerEmailParams, forgotPasswordEmailParams} = require('../helpers/email')
 const shortId = require('shortid')
+const expressJWT = require('express-jwt')
+const _ = require('lodash')
 
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -113,4 +115,121 @@ exports.login = (req, res) => {
             user: {_id, name, email, role }  
         })
     })
+}
+
+exports.requireSignIn = expressJWT({secret : process.env.JWT_SECRET})
+
+exports.authMiddleware = (req, res, next) => {
+    const authUserId = req.user._id
+    User.findOne({_id: authUserId}).exec((err, user) => {
+        if(err || !user){
+            return res.status(400).json({
+                error: 'User not found'
+            })
+        }
+        req.profile = user
+        next()
+    })
+}
+
+exports.adminMiddleware = (req, res, next) => {
+    const adminUserId = req.user._id
+    User.findOne({_id: adminUserId}).exec((err, user) => {
+        if(err || !user){
+            return res.status(400).json({
+                error: 'User not found'
+            })
+        }
+
+        if (user.role !== 'admin') {
+            return res.status(400).json({
+                error: 'User not authorized. Access Denied'
+            })
+        }
+        req.profile = user
+        next()
+    })
+}
+
+exports.forgotPassword = (req, res) => {
+    const {email} = req.body
+    // check if user exists in database
+    User.findOne({email}).exec((err, user) => {
+        if (err || !user) {
+            return res.status(400).json({
+                error: 'User with that email does not exist'
+            })
+        }
+
+        // generate token and email to user
+        const token = jwt.sign({name: user.name}, process.env.JWT_RESET_PASSWORD, {
+            expiresIn : '10m'
+        })
+
+        // send email
+        const params = forgotPasswordEmailParams(email, token)
+
+        // populate the database > user > resetPasswordLink
+        return User.updateOne({resetPasswordLink: token}, (err, success) => {
+            if (err) {
+                return res.status(400).json({
+                    error: 'Password Reset Failed. Try Later'
+                })
+            }
+            
+            const sendEmail = ses.sendEmail(params).promise()
+            sendEmail
+            .then(data => {
+                console.log('reset Password Success')
+                return res.json({
+                    message: `Email has been sent to ${email}. Click on the link to reset your password`
+                })    
+            })
+            .catch(error => {
+                console.log(' reset Password failed ', error)
+                return res.json({
+                    message: `We could not verify this email. Try later`
+                })
+            })
+        })
+    })
+}
+
+exports.resetPassword = (req, res) => {
+    const {resetPasswordLink, newPassword} = req.body
+    if (resetPasswordLink) {
+        // check for expiry
+        jwt.verify(resetPasswordLink, process.env.JWT_RESET_PASSWORD, (err, success) => {
+            if(err) {
+                return res.status(400).json({
+                    error: 'Expired Link. Try again'
+                })
+            }
+        })
+
+        User.findOne({resetPasswordLink}).exec((err, user) => {
+            if (err || !user) {
+                return res.status(400).json({
+                    error: 'Invalid Token'
+                })
+            }
+
+            const updatedFields = {
+                password : newPassword,
+                resetPasswordLink : ''
+            }
+
+            user = _.extend(user, updatedFields)
+
+            user.save((err, result) => {
+                if (err) {
+                error: 'Password Reset Failed. Try again'
+                }
+            })
+
+            res.json({
+                message: 'You can login using the new Password'
+            })
+        })
+    }
 }
