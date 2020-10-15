@@ -5,9 +5,6 @@ exports.categoryCreateValidator = [
     .not()
     .isEmpty()
     .withMessage('Name is required'),
-    check('image')
-    .isEmpty()
-    .withMessage('Valid Image is required'),
     check('content')
     .isLength({min:20})
     .withMessage('20 characters content is required')

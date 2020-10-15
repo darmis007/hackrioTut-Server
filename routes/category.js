@@ -11,7 +11,7 @@ const { runValidation } = require('../validators/index');
 const { create, list, read, update, remove} = require('../controllers/category')
 
 // routes
-router.post('/category', requireSignIn, adminMiddleware, create)
+router.post('/category', categoryCreateValidator, runValidation, requireSignIn, adminMiddleware, create)
 router.get('/category', list)
 router.get('/category/:slug', read)
 router.put('/category/:slug', categoryUpdateValidator, runValidation, requireSignIn, adminMiddleware, create)
