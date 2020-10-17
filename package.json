@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js", 
-    "precommit": "lint-staged"
+    "start": "nodemon server.js",
+    "precommit": "lint-staged",
+    "pretty": "prettier --write \"./**/*.{js,jsx,json}\""
   },
   "lint-staged": {
     "*.js": [

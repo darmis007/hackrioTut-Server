@@ -1,21 +1,15 @@
-const {check} = require('express-validator')
+const { check } = require("express-validator");
 
 exports.categoryCreateValidator = [
-    check('name')
-    .not()
-    .isEmpty()
-    .withMessage('Name is required'),
-    check('content')
-    .isLength({min:20})
-    .withMessage('20 characters content is required')
+  check("name").not().isEmpty().withMessage("Name is required"),
+  check("content")
+    .isLength({ min: 20 })
+    .withMessage("20 characters content is required"),
 ];
 
 exports.categoryUpdateValidator = [
-    check('name')
-    .not()
-    .isEmpty()
-    .withMessage('Name is required'),
-    check('content')
-    .isLength({min:20})
-    .withMessage('20 characters content is required')
+  check("name").not().isEmpty().withMessage("Name is required"),
+  check("content")
+    .isLength({ min: 20 })
+    .withMessage("20 characters content is required"),
 ];
