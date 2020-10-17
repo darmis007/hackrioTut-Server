@@ -1,17 +1,39 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 // import from controllers
-const { register, registerActivate, login, requireSignIn, forgotPassword, resetPassword } = require('../controllers/auth');
+const {
+  register,
+  registerActivate,
+  login,
+  requireSignIn,
+  forgotPassword,
+  resetPassword,
+} = require("../controllers/auth");
 
 // import from validators
-const { userRegisterValidator, userLoginValidator, forgotPasswordValidator, resetPasswordValidator } = require('../validators/auth');
-const { runValidation } = require('../validators/index');
+const {
+  userRegisterValidator,
+  userLoginValidator,
+  forgotPasswordValidator,
+  resetPasswordValidator,
+} = require("../validators/auth");
+const { runValidation } = require("../validators/index");
 
-router.post('/register', userRegisterValidator, runValidation, register);
-router.post('/register/activate', registerActivate);
-router.post('/login', userLoginValidator, runValidation, login);
-router.put('/forgot-password', forgotPasswordValidator, runValidation, forgotPassword),
-router.put('/reset-password', resetPasswordValidator, runValidation, resetPassword)
+router.post("/register", userRegisterValidator, runValidation, register);
+router.post("/register/activate", registerActivate);
+router.post("/login", userLoginValidator, runValidation, login);
+router.put(
+  "/forgot-password",
+  forgotPasswordValidator,
+  runValidation,
+  forgotPassword
+),
+  router.put(
+    "/reset-password",
+    resetPasswordValidator,
+    runValidation,
+    resetPassword
+  );
 
 module.exports = router;

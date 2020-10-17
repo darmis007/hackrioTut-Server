@@ -4,7 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon server.js", 
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "./node_modules/prettier/bin/prettier.js --tab-width 4 --write",
+      "git add"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -18,11 +25,14 @@
     "express-jwt": "^5.3.3",
     "express-validator": "^6.6.1",
     "formidable": "^1.2.2",
+    "husky": "^4.3.0",
     "jsonwebtoken": "^8.5.1",
+    "lint-staged": "^10.4.2",
     "lodash": "^4.17.20",
     "mongoose": "^5.8.7",
     "morgan": "^1.9.1",
     "nodemon": "^2.0.2",
+    "prettier": "^2.1.2",
     "shortid": "^2.2.15",
     "slugify": "^1.4.5",
     "uuid": "^8.3.0"
