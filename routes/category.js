@@ -40,7 +40,7 @@ router.put(
   runValidation,
   requireSignIn,
   adminMiddleware,
-  create
+  update
 );
 router.delete("/category/:slug", requireSignIn, adminMiddleware, remove);
 
