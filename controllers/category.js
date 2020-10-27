@@ -3,7 +3,7 @@ const Link = require("../models/link");
 const slugify = require("slugify");
 const formidable = require("formidable");
 const AWS = require("aws-sdk");
-const uuidv4 = require("uuid/v4");
+const uuidv4 = require("uuid");
 const fs = require("fs");
 
 // s3
