@@ -8,7 +8,7 @@ const {
 const shortId = require("shortid");
 const expressJWT = require("express-jwt");
 const _ = require("lodash");
-
+const Link = require("../models/link");
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -19,7 +19,7 @@ const ses = new AWS.SES({ apiVersion: "2010-12-01" });
 
 exports.register = (req, res) => {
   // console.log('REGISTER CONTROLLER', req.body);
-  const { name, email, password } = req.body;
+  const { name, email, password, categories } = req.body;
   // Check User Exists
   User.findOne({ email }).exec((err, user) => {
     if (user) {
@@ -30,7 +30,7 @@ exports.register = (req, res) => {
     }
     // generate token with user name and email and password
     const token = jwt.sign(
-      { name, email, password },
+      { name, email, password, categories },
       process.env.JWT_ACCOUNT_ACTIVATION,
       {
         expiresIn: "10m",
@@ -67,7 +67,7 @@ exports.registerActivate = (req, res) => {
       });
     }
 
-    const { name, email, password } = jwt.decode(token);
+    const { name, email, password, categories } = jwt.decode(token);
     const username = shortId.generate();
 
     User.findOne({ email }).exec((err, user) => {
@@ -77,7 +77,7 @@ exports.registerActivate = (req, res) => {
         });
       }
       // Register New User
-      const newUser = new User({ username, name, email, password });
+      const newUser = new User({ username, name, email, password, categories });
       newUser.save((err, newUser) => {
         if (err) {
           return res.status(401).json({
@@ -247,4 +247,23 @@ exports.resetPassword = (req, res) => {
       });
     });
   }
+};
+
+exports.canUpdateDeleteLink = (req, res, next) => {
+  const { id } = req.params;
+  Link.findOne({ _id: id }).exec((err, data) => {
+    if (err) {
+      return res.status(400).json({
+        error: "Could not find link",
+      });
+    }
+    let authorizedUser =
+      data.postedBy._id.toString() === req.user._id.toString();
+    if (!authorizedUser) {
+      return res.status(400).json({
+        error: "You are not authorized",
+      });
+    }
+    next();
+  });
 };

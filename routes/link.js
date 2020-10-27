@@ -1,20 +1,20 @@
 const express = require("express");
 const router = express.Router();
 
-// import from controllers
-const {
-  requireSignIn,
-  adminMiddleware,
-  authMiddleware,
-} = require("../controllers/auth");
-const {} = require("../controllers/link");
-
-// import from validators
+// validators
 const {
   linkCreateValidator,
   linkUpdateValidator,
 } = require("../validators/link");
-const { runValidation } = require("../validators/index");
+const { runValidation } = require("../validators");
+
+// controllers
+const {
+  requireSignIn,
+  authMiddleware,
+  adminMiddleware,
+  canUpdateDeleteLink,
+} = require("../controllers/auth");
 const {
   create,
   list,
@@ -22,6 +22,8 @@ const {
   update,
   remove,
   clickCount,
+  popular,
+  popularInCategory,
 } = require("../controllers/link");
 
 // routes
@@ -33,17 +35,35 @@ router.post(
   authMiddleware,
   create
 );
-router.get("/link", list);
+router.post("/links", requireSignIn, adminMiddleware, list);
 router.put("/click-count", clickCount);
-router.get("/link/:slug", read);
+router.get("/link/popular", popular);
+router.get("/link/popular/:slug", popularInCategory);
+router.get("/link/:id", read);
 router.put(
-  "/link/:slug",
+  "/link/:id",
   linkUpdateValidator,
   runValidation,
   requireSignIn,
   authMiddleware,
-  create
+  canUpdateDeleteLink,
+  update
 );
-router.delete("/link/:slug", requireSignIn, authMiddleware, remove);
+router.put(
+  "/link/admin/:id",
+  linkUpdateValidator,
+  runValidation,
+  requireSignIn,
+  adminMiddleware,
+  update
+);
+router.delete(
+  "/link/:id",
+  requireSignIn,
+  authMiddleware,
+  canUpdateDeleteLink,
+  remove
+);
+router.delete("/link/admin/:id", requireSignIn, adminMiddleware, remove);
 
 module.exports = router;
